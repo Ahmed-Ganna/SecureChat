@@ -13,13 +13,13 @@
         <ImageView
             android:layout_width="@dimen/img_width"
             android:layout_height="@dimen/img_height"
-            android:src="@drawable/friendship" />
+            android:src="@drawable/hti_logo" />
 
         <TextView
             android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/title_slide1"
+            android:text="H T I"
             android:textColor="@android:color/black"
             android:textSize="@dimen/slide_title"
             android:textStyle="bold" />
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/desc_padding"
             android:paddingRight="@dimen/desc_padding"
-            android:text="@string/desc_slide1"
+            android:text="Graduation project"
             android:textAlignment="center"
             android:textSize="@dimen/slide_desc" />
 

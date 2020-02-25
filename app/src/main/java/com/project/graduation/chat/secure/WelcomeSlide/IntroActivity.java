@@ -38,6 +38,8 @@ public class IntroActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+
+
         setContentView(R.layout.intro_activity);
 
         // saving in local cache through Shared Preferences
@@ -56,9 +58,7 @@ public class IntroActivity extends Activity {
 
         layouts = new int[]{
                 R.layout.slide1,
-                R.layout.slide2,
-                R.layout.slide3,
-                R.layout.slide4};
+                R.layout.slide2};
 
         // adding bottom dots
         addBottomDots(0);
