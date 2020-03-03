@@ -2,6 +2,7 @@ package com.project.graduation.chat.secure.Chat;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -83,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
     private StorageReference imageMessageStorageRef;
 
     private ConnectivityReceiver connectivityReceiver;
+    private boolean imgSecurity;
 
 
     @Override
@@ -123,7 +126,7 @@ public class ChatActivity extends AppCompatActivity {
         input_user_message = findViewById(R.id.c_input_message);
 
         // setup for showing messages
-        messageAdapter = new MessageAdapter(messageList);
+        messageAdapter = new MessageAdapter(this,messageList);
         messageList_ReCyVw = findViewById(R.id.message_list);
         linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
@@ -193,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
         send_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage();
+                showTimeDialog("text");
             }
         });
 
@@ -202,12 +205,38 @@ public class ChatActivity extends AppCompatActivity {
         send_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
-                galleryIntent.setType("image/*");
-                startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+
+                showTimeDialog("image");
+
             }
         });
     } // ending onCreate
+
+    private void showTimeDialog(final String type) {
+        String[] types = {"Secure message", "Don`t secure message"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Security");
+        builder.setItems(types, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                if (type.equals("text")){
+
+
+                    sendMessage(which==0 );
+
+
+                }else {
+                    imgSecurity = which==0;
+                    Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
+                    galleryIntent.setType("image/*");
+                    startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+                }
+            }
+        });
+        builder.show();
+    }
 
 
     @Override
@@ -267,6 +296,7 @@ public class ChatActivity extends AppCompatActivity {
                             message_text_body.put("type", "image");
                             message_text_body.put("time", ServerValue.TIMESTAMP);
                             message_text_body.put("from", messageSenderId);
+                            message_text_body.put("toEncrypt", imgSecurity);
 
                             HashMap<String, Object> messageBodyDetails = new HashMap<>();
                             messageBodyDetails.put(message_sender_reference + "/" + message_push_id, message_text_body);
@@ -298,12 +328,29 @@ public class ChatActivity extends AppCompatActivity {
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         if (dataSnapshot.exists()){
                             Message message = dataSnapshot.getValue(Message.class);
+                            message.setDbReference(dataSnapshot.getRef());
                             messageList.add(message);
                             messageAdapter.notifyDataSetChanged();
                         }
                     }
                     @Override
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                        if (dataSnapshot.exists()){
+
+                            int position = 0 ;
+                            for (int i = 0; i < messageList.size(); i++) {
+                                if (messageList.get(i).getDbReference().getKey().equals(dataSnapshot.getKey())){
+                                    position = i;
+                                }
+                            }
+
+                            Message message = dataSnapshot.getValue(Message.class);
+                            message.setDbReference(dataSnapshot.getRef());
+                            messageList.set(position,message);
+                            messageAdapter.notifyItemChanged(position);
+                        }
+
                     }
                     @Override
                     public void onChildRemoved(DataSnapshot dataSnapshot) {
@@ -319,7 +366,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-    private void sendMessage() {
+    private void sendMessage(boolean toEncrypt) {
         String message = input_user_message.getText().toString();
         if (TextUtils.isEmpty(message)){
             SweetToast.info(ChatActivity.this, "Please type a message");
@@ -336,6 +383,7 @@ public class ChatActivity extends AppCompatActivity {
             message_text_body.put("type", "text");
             message_text_body.put("time", ServerValue.TIMESTAMP);
             message_text_body.put("from", messageSenderId);
+            message_text_body.put("toEncrypt", toEncrypt);
 
             HashMap<String, Object> messageBodyDetails = new HashMap<>();
             messageBodyDetails.put(message_sender_reference + "/" + message_push_id, message_text_body);
