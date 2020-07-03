@@ -5,7 +5,7 @@ import com.google.firebase.database.Exclude;
 
 public class Message {
 
-    private String message, type;
+    private String message, type,to;
     private long time;
     private boolean seen;
     private String from;
@@ -90,6 +90,14 @@ public class Message {
         this.toEncrypt = toEncrypt;
     }
 
+
+    public String getTo(){
+        return to;
+    }
+
+    public void setTo(String to){
+        this.to = to;
+    }
 
     public DatabaseReference getDbReference() {
         return dbReference;

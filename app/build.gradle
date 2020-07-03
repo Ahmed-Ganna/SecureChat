@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.project.graduation.chat.secure"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
         versionName "1.0.2"
@@ -50,6 +50,8 @@ dependencies {
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
     // Picasso Library
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+
     // HTTP & HTTP/2 client for Android
     implementation 'com.squareup.okhttp3:okhttp:4.0.1'
     // image Compressor library

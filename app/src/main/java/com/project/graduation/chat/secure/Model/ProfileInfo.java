@@ -6,6 +6,7 @@ public class ProfileInfo {
     private String user_image;
     private String user_status;
     private String user_thumb_image;
+    public String user_id;
 
     public ProfileInfo() {
     }

@@ -33,6 +33,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.project.graduation.chat.secure.About.AboutAppActivity;
+import com.project.graduation.chat.secure.Chat.GroupChatActivity;
 import com.project.graduation.chat.secure.LoginReg.LoginActivity;
 import com.project.graduation.chat.secure.Friends.FriendsActivity;
 import com.project.graduation.chat.secure.R;
@@ -179,6 +180,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (item.getItemId() == R.id.about_app){
             Intent intent =  new Intent(MainActivity.this, AboutAppActivity.class);
+            startActivity(intent);
+        }
+
+        if (item.getItemId() == R.id.menu_group){
+            Intent intent =  new Intent(MainActivity.this, GroupChatActivity.class);
             startActivity(intent);
         }
 

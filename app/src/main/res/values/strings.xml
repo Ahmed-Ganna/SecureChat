@@ -58,6 +58,7 @@
     <string name="menu_search">Search</string>
     <string name="register_success_popup">Registered successfully.\nVerification email has been sent.\nPlease verify email.</string>
     <string name="recheck_gender">To save your changes, please check/recheck your GENDER.</string>
+    <string name="group">Group chat</string>
 
     <string-array name="spinerViewPeople">
         <item>Default</item>

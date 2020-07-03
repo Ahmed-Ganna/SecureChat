@@ -25,7 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-import com.project.graduation.chat.secure.Chat.ChatActivity;
+import com.project.graduation.chat.secure.Chat.SingleChatActivity;
 import com.project.graduation.chat.secure.Model.Friends;
 import com.project.graduation.chat.secure.R;
 import com.project.graduation.chat.secure.Utils.UserLastSeenTime;
@@ -145,7 +145,7 @@ public class ChatsFragment extends Fragment {
                                     // user active status validation
                                     if (dataSnapshot.child("active_now").exists()) {
 
-                                        Intent chatIntent = new Intent(getContext(), ChatActivity.class);
+                                        Intent chatIntent = new Intent(getContext(), SingleChatActivity.class);
                                         chatIntent.putExtra("visitUserId", userID);
                                         chatIntent.putExtra("userName", userName);
                                         startActivity(chatIntent);
@@ -155,7 +155,7 @@ public class ChatsFragment extends Fragment {
                                                 .setValue(ServerValue.TIMESTAMP).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                Intent chatIntent = new Intent(getContext(), ChatActivity.class);
+                                                Intent chatIntent = new Intent(getContext(), SingleChatActivity.class);
                                                 chatIntent.putExtra("visitUserId", userID);
                                                 chatIntent.putExtra("userName", userName);
                                                 startActivity(chatIntent);

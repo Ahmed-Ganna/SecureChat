@@ -42,7 +42,7 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "CHATS"; // ChatsFragment
             case 1:
-                return "REQUESTS"; // ttttRequestsFragment
+                return "REQUESTS"; // RequestsFragment
             default:
                 return null;
         }

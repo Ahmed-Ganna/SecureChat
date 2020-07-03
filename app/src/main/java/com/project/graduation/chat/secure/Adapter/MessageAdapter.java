@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,8 +51,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private DatabaseReference rootDbReference;
     private Context context;
     private Handler handler;
+    private boolean isGroup;
 
-    public MessageAdapter(Context context, List<Message> messageList) {
+    public MessageAdapter(Context context, List<Message> messageList, boolean isGroup) {
+        this.isGroup = isGroup;
         this.messageList = messageList;
         this.context = context;
         this.handler = new Handler();
@@ -72,10 +76,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final Message message = messageList.get(position);
 
         String from_user_ID = message.getFrom();
-        final String from_message_TYPE = message.getType();
+        final String messageType = message.getType();
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(from_user_ID);
-        //databaseReference.keepSynced(true); // for offline
+        databaseReference.keepSynced(true); // for offline
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -85,7 +89,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     //
                     Picasso.get()
                             .load(userProfileImage)
-                            .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                            //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                             .placeholder(R.drawable.default_profile_image)
                             .into(holder.user_profile_image);
                 }
@@ -99,7 +103,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
         // if message type is TEXT
-        if (from_message_TYPE.equals("text")){
+        if (messageType.equals("text")){
             holder.receiver_text_message.setVisibility(View.INVISIBLE);
             holder.user_profile_image.setVisibility(View.INVISIBLE);
 
@@ -108,6 +112,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             holder.receiverImageMsg.setVisibility(View.GONE);
 
             if (from_user_ID.equals(sender_UID)){
+                holder.sender_text_message.setVisibility(View.VISIBLE);
                 holder.sender_text_message.setBackgroundResource(R.drawable.single_message_text_another_background);
                 holder.sender_text_message.setTextColor(Color.BLACK);
                 holder.sender_text_message.setGravity(Gravity.LEFT);
@@ -126,7 +131,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             }
         }
-        if (from_message_TYPE.equals("image")){ // if message type is NON TEXT
+
+        // if message type is Image
+        if (messageType.equals("image")){
             // when msg has IMAGE, text views are GONE
             holder.sender_text_message.setVisibility(View.GONE);
             holder.receiver_text_message.setVisibility(View.GONE);
@@ -134,7 +141,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             if (from_user_ID.equals(sender_UID)){
                 holder.user_profile_image.setVisibility(View.GONE);
                 holder.receiverImageMsg.setVisibility(View.GONE);
-                //holder.senderImageMsg.setVisibility(View.VISIBLE);
+                holder.senderImageMsg.setVisibility(View.VISIBLE);
 
 
                 loadMessageImage(message,holder.senderImageMsg);
@@ -143,7 +150,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             } else {
                 holder.user_profile_image.setVisibility(View.VISIBLE);
                 holder.senderImageMsg.setVisibility(View.GONE);
-                //holder.receiverImageMsg.setVisibility(View.VISIBLE);
+                holder.receiverImageMsg.setVisibility(View.VISIBLE);
 
                 loadMessageImage(message,holder.receiverImageMsg);
 
@@ -153,20 +160,32 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
 
+        if (message.isToEncrypt() && !message.isEncrypted() ){
 
-        if (message.isToEncrypt()){
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
 
-            if (!message.isEncrypted()){
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
+                    if (isGroup){
 
+                        String messageReference = "group_chat/"+message.getDbReference().getKey();
+
+                        HashMap<String,Object> map = new HashMap<>();
+
+                        if (messageType.equals("text")){
+                            String encrypted = getEncryptedMessage(message.getMessage());
+                            map.put("message",encrypted);
+                        }
+                        map.put("encrypted",true);
+                        rootDbReference.child(messageReference).updateChildren(map);
+
+                    }else {
                         String message_sender_reference = "messages/" + message.getFrom() + "/" + mAuth.getCurrentUser().getUid()+"/"+message.getDbReference().getKey();
                         String message_receiver_reference = "messages/" + mAuth.getCurrentUser().getUid() + "/" + message.getFrom()+"/"+message.getDbReference().getKey();
 
                         HashMap<String,Object> map = new HashMap<>();
 
-                        if (from_message_TYPE.equals("text")){
+                        if (messageType.equals("text")){
                             String encrypted = getEncryptedMessage(message.getMessage());
                             map.put("message",encrypted);
                         }
@@ -174,8 +193,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         rootDbReference.child(message_sender_reference).updateChildren(map);
                         rootDbReference.child(message_receiver_reference).updateChildren(map);
                     }
-                },TIME_MESSAGE_MILLIES);
-            }
+
+                }
+            },TIME_MESSAGE_MILLIES);
         }
 
     }
@@ -210,7 +230,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 @Override
                 public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
                 }
 
 
@@ -223,7 +242,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Picasso.get()
                     .load(message.getMessage())
                     //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
-                    .placeholder(R.drawable.default_profile_image)
+                    .placeholder(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)))
                     .into(target);
 
         }else {
@@ -231,7 +250,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Picasso.get()
                     .load(message.getMessage())
                     //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
-                    .placeholder(R.drawable.default_profile_image)
+                    .placeholder(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)))
                     .into(imageView);
 
 

@@ -58,7 +58,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import xyz.hasnat.sweettoast.SweetToast;
 
 
-public class ChatActivity extends AppCompatActivity {
+public class SingleChatActivity extends AppCompatActivity {
 
     private String messageReceiverID;
     private String messageReceiverName;
@@ -126,7 +126,7 @@ public class ChatActivity extends AppCompatActivity {
         input_user_message = findViewById(R.id.c_input_message);
 
         // setup for showing messages
-        messageAdapter = new MessageAdapter(this,messageList);
+        messageAdapter = new MessageAdapter(this,messageList, false);
         messageList_ReCyVw = findViewById(R.id.message_list);
         linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
@@ -277,7 +277,7 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task){
                     if (!task.isSuccessful()){
-                        SweetToast.error(ChatActivity.this, "Error: " + task.getException().getMessage());
+                        SweetToast.error(SingleChatActivity.this, "Error: " + task.getException().getMessage());
                     }
                     download_url = file_path.getDownloadUrl().toString();
                     return file_path.getDownloadUrl();
@@ -313,7 +313,7 @@ public class ChatActivity extends AppCompatActivity {
                             });
                             Log.e("tag", "Image sent successfully");
                         } else{
-                            SweetToast.warning(ChatActivity.this, "Failed to send image. Try again");
+                            SweetToast.warning(SingleChatActivity.this, "Failed to send image. Try again");
                         }
                     }
                 }
@@ -369,7 +369,7 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(boolean toEncrypt) {
         String message = input_user_message.getText().toString();
         if (TextUtils.isEmpty(message)){
-            SweetToast.info(ChatActivity.this, "Please type a message");
+            SweetToast.info(SingleChatActivity.this, "Please type a message");
         } else {
             String message_sender_reference = "messages/" + messageSenderId + "/" + messageReceiverID;
             String message_receiver_reference = "messages/" + messageReceiverID + "/" + messageSenderId;
@@ -418,7 +418,7 @@ public class ChatActivity extends AppCompatActivity {
                 // LAUNCH activity after certain time period
                 new Timer().schedule(new TimerTask(){
                     public void run() {
-                        ChatActivity.this.runOnUiThread(new Runnable() {
+                        SingleChatActivity.this.runOnUiThread(new Runnable() {
                             public void run() {
                                 ChatConnectionTV.setVisibility(View.GONE);
                             }

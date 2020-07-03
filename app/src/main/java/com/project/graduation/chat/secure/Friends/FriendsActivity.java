@@ -26,7 +26,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-import com.project.graduation.chat.secure.Chat.ChatActivity;
+import com.project.graduation.chat.secure.Chat.SingleChatActivity;
 import com.project.graduation.chat.secure.Model.Friends;
 import com.project.graduation.chat.secure.Profile.ProfileActivity;
 import com.project.graduation.chat.secure.R;
@@ -128,7 +128,7 @@ public class FriendsActivity extends AppCompatActivity {
                                             // user active status validation
                                             if (dataSnapshot.child("active_now").exists()){
 
-                                                Intent chatIntent = new Intent(FriendsActivity.this, ChatActivity.class);
+                                                Intent chatIntent = new Intent(FriendsActivity.this, SingleChatActivity.class);
                                                 chatIntent.putExtra("visitUserId", userID);
                                                 chatIntent.putExtra("userName", userName);
                                                 startActivity(chatIntent);
@@ -138,7 +138,7 @@ public class FriendsActivity extends AppCompatActivity {
                                                         .setValue(ServerValue.TIMESTAMP).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
-                                                        Intent chatIntent = new Intent(FriendsActivity.this, ChatActivity.class);
+                                                        Intent chatIntent = new Intent(FriendsActivity.this, SingleChatActivity.class);
                                                         chatIntent.putExtra("visitUserId", userID);
                                                         chatIntent.putExtra("userName", userName);
                                                         startActivity(chatIntent);
