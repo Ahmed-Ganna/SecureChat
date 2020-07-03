@@ -1,5 +1,6 @@
 package com.project.graduation.chat.secure.Chat;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -86,12 +87,17 @@ public class SingleChatActivity extends AppCompatActivity {
 
     private ConnectivityReceiver connectivityReceiver;
     private boolean imgSecurity;
+    private ProgressDialog dialog;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        dialog = new ProgressDialog(this);
+
+        dialog.setMessage("Please wait.");
 
         rootReference = FirebaseDatabase.getInstance().getReference();
 
@@ -260,6 +266,9 @@ public class SingleChatActivity extends AppCompatActivity {
          //  For image sending
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_PICK_CODE && resultCode == RESULT_OK && data != null && data.getData() != null){
+
+            showLoading();
+
             Uri imageUri = data.getData();
 
             // image message sending size compressing will be placed below
@@ -331,6 +340,7 @@ public class SingleChatActivity extends AppCompatActivity {
                             message.setDbReference(dataSnapshot.getRef());
                             messageList.add(message);
                             messageAdapter.notifyDataSetChanged();
+                            messageList_ReCyVw.smoothScrollToPosition(messageList.size() -1);
                         }
                     }
                     @Override
@@ -433,5 +443,16 @@ public class SingleChatActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void showLoading() {
+        dialog.show();
+    }
+
+    private void hideLoading() {
+        if (dialog.isShowing()) {
+            dialog.dismiss();
+        }
+    }
+
 
 }

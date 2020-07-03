@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import jp.wasabeef.picasso.transformations.BlurTransformation;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>{
 
@@ -141,7 +142,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             if (from_user_ID.equals(sender_UID)){
                 holder.user_profile_image.setVisibility(View.GONE);
                 holder.receiverImageMsg.setVisibility(View.GONE);
-                holder.senderImageMsg.setVisibility(View.VISIBLE);
 
 
                 loadMessageImage(message,holder.senderImageMsg);
@@ -150,7 +150,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             } else {
                 holder.user_profile_image.setVisibility(View.VISIBLE);
                 holder.senderImageMsg.setVisibility(View.GONE);
-                holder.receiverImageMsg.setVisibility(View.VISIBLE);
 
                 loadMessageImage(message,holder.receiverImageMsg);
 
@@ -220,30 +219,36 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void loadMessageImage(Message message, final RoundedImageView imageView) {
+
+        imageView.setVisibility(View.VISIBLE);
+
         if (message.isEncrypted()){
 
-            Target target = new Target() {
+            /*Target target = new Target() {
                 @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+
                     imageView.setImageBitmap(BlurImage.fastblur(bitmap, 1f, 80));
                 }
 
                 @Override
                 public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                    e.printStackTrace();
                 }
 
 
                 @Override
                 public void onPrepareLoad(Drawable placeHolderDrawable) {
-
+                    imageView.setImageDrawable(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)));
                 }
-            };
+            };*/
 
             Picasso.get()
                     .load(message.getMessage())
                     //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                    .transform(new BlurTransformation(context, 80, 1))
                     .placeholder(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)))
-                    .into(target);
+                    .into(imageView);
 
         }else {
 

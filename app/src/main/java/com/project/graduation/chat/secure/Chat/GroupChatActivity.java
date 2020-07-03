@@ -1,17 +1,27 @@
 package com.project.graduation.chat.secure.Chat;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -36,18 +46,30 @@ import com.project.graduation.chat.secure.Adapter.MessageAdapter;
 import com.project.graduation.chat.secure.Model.Message;
 import com.project.graduation.chat.secure.Model.ProfileInfo;
 import com.project.graduation.chat.secure.R;
+import com.project.graduation.chat.secure.Utils.UserLastSeenTime;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.function.Predicate;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
 import xyz.hasnat.sweettoast.SweetToast;
 
 
 public class GroupChatActivity extends AppCompatActivity {
+
 
 
     private DatabaseReference rootReference;
@@ -102,7 +124,7 @@ public class GroupChatActivity extends AppCompatActivity {
         input_user_message = findViewById(R.id.c_input_message);
 
         // setup for showing messages
-        messageAdapter = new MessageAdapter(this, messageList, true);
+        messageAdapter = new MessageAdapter(this,messageList,true );
         messageList_ReCyVw = findViewById(R.id.message_list);
         linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
@@ -146,7 +168,7 @@ public class GroupChatActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
 
 
-                showSelectUsersDialog(type, which == 0);
+                showSelectUsersDialog(type,which ==0);
 
             }
         });
@@ -165,16 +187,16 @@ public class GroupChatActivity extends AppCompatActivity {
 
                 final ArrayList<ProfileInfo> users = new ArrayList<>();
 
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     ProfileInfo user = postSnapshot.getValue(ProfileInfo.class);
                     user.user_id = postSnapshot.getKey();
 
-                    if (!user.user_id.equals(FirebaseAuth.getInstance().getUid())) users.add(user);
+                    if (!user.user_id.equals(FirebaseAuth.getInstance().getUid()))  users.add(user);
 
                 }
 
 
-                if (!users.isEmpty()) {
+                if (!users.isEmpty()){
 
                     final String[] usersNames = new String[users.size()];
                     final boolean[] checked = new boolean[users.size()];
@@ -189,9 +211,9 @@ public class GroupChatActivity extends AppCompatActivity {
                     builder.setMultiChoiceItems(usersNames, checked, new DialogInterface.OnMultiChoiceClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                            if (isChecked) {
+                            if (isChecked){
                                 lastSelectedSendUsersIds.add(users.get(which).user_id);
-                            } else {
+                            }else {
                                 lastSelectedSendUsersIds.remove(users.get(which).user_id);
                             }
                         }
@@ -201,11 +223,11 @@ public class GroupChatActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
 
 
-                            if (type.equals("text")) {
+                            if (type.equals("text")){
 
                                 sendMessage(encrypt);
 
-                            } else {
+                            }else {
                                 imgSecurity = encrypt;
                                 Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
                                 galleryIntent.setType("image/*");
@@ -217,8 +239,9 @@ public class GroupChatActivity extends AppCompatActivity {
                     builder.show();
 
 
-                } else {
-                    SweetToast.info(GroupChatActivity.this, "No users found");
+
+                }else {
+                    SweetToast.info(GroupChatActivity.this,"No users found");
                 }
 
 
@@ -234,80 +257,72 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
 
+
     @Override // for gallery picking
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //  For image sending
+         //  For image sending
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == GALLERY_PICK_CODE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == GALLERY_PICK_CODE && resultCode == RESULT_OK && data != null && data.getData() != null){
 
-            try {
-                Uri imageUri = data.getData();
+            Uri imageUri = data.getData();
 
-                File compressed = new Compressor(this).compressToFile(new File(imageUri.getPath()));
+            showLoading();
 
-                imageUri = Uri.fromFile(compressed);
+            DatabaseReference user_message_key = rootReference.child("group_chat").push();
+            final String message_push_id = user_message_key.getKey();
 
-                showLoading();
+            final StorageReference file_path = imageMessageStorageRef.child(message_push_id + ".jpg");
 
-                DatabaseReference user_message_key = rootReference.child("group_chat").push();
-                final String message_push_id = user_message_key.getKey();
-
-                final StorageReference file_path = imageMessageStorageRef.child(message_push_id + ".jpg");
-
-                UploadTask uploadTask = file_path.putFile(imageUri);
-                uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                    @Override
-                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if (!task.isSuccessful()) {
-                            SweetToast.error(GroupChatActivity.this, "Error: " + task.getException().getMessage());
-                        }
-                        download_url = file_path.getDownloadUrl().toString();
-                        return file_path.getDownloadUrl();
+            UploadTask uploadTask = file_path.putFile(imageUri);
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task){
+                    if (!task.isSuccessful()){
+                        SweetToast.error(GroupChatActivity.this, "Error: " + task.getException().getMessage());
                     }
-                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Uri> task) {
-                        if (task.isSuccessful()) {
-                            if (task.isSuccessful()) {
-                                hideLoading();
-                                download_url = task.getResult().toString();
-                                //Toast.makeText(ChatActivity.this, "From ChatActivity, link: " +download_url, Toast.LENGTH_SHORT).show();
-
-                                HashMap<String, Object> message_text_body = new HashMap<>();
-                                message_text_body.put("message", download_url);
-                                message_text_body.put("seen", false);
-                                message_text_body.put("type", "image");
-                                message_text_body.put("time", ServerValue.TIMESTAMP);
-                                message_text_body.put("from", messageSenderId);
-                                message_text_body.put("to", TextUtils.join(",", lastSelectedSendUsersIds));
-                                message_text_body.put("toEncrypt", imgSecurity);
-
-                                HashMap<String, Object> messageBodyDetails = new HashMap<>();
-                                messageBodyDetails.put("group_chat" + "/" + message_push_id, message_text_body);
-
-                                rootReference.updateChildren(messageBodyDetails, new DatabaseReference.CompletionListener() {
-                                    @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                        if (databaseError != null) {
-                                            Log.e("from_image_chat: ", databaseError.getMessage());
-                                        }
-                                        input_user_message.setText("");
-                                    }
-                                });
-                                Log.e("tag", "Image sent successfully");
-                            } else {
-                                SweetToast.warning(GroupChatActivity.this, "Failed to send image. Try again");
-                            }
-                        } else {
+                    download_url = file_path.getDownloadUrl().toString();
+                    return file_path.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()){
+                        if (task.isSuccessful()){
                             hideLoading();
-                            SweetToast.error(GroupChatActivity.this, "Error occurred while uploading");
-                        }
-                    }
-                });
+                            download_url = task.getResult().toString();
+                            //Toast.makeText(ChatActivity.this, "From ChatActivity, link: " +download_url, Toast.LENGTH_SHORT).show();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                            HashMap<String, Object> message_text_body = new HashMap<>();
+                            message_text_body.put("message", download_url);
+                            message_text_body.put("seen", false);
+                            message_text_body.put("type", "image");
+                            message_text_body.put("time", ServerValue.TIMESTAMP);
+                            message_text_body.put("from", messageSenderId);
+                            message_text_body.put("to", TextUtils.join("," , lastSelectedSendUsersIds));
+                            message_text_body.put("toEncrypt", imgSecurity);
+
+                            HashMap<String, Object> messageBodyDetails = new HashMap<>();
+                            messageBodyDetails.put("group_chat" + "/" + message_push_id, message_text_body);
+
+                            rootReference.updateChildren(messageBodyDetails, new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                    if (databaseError != null){
+                                        Log.e("from_image_chat: ", databaseError.getMessage());
+                                    }
+                                    input_user_message.setText("");
+                                }
+                            });
+                            Log.e("tag", "Image sent successfully");
+                        } else{
+                            SweetToast.warning(GroupChatActivity.this, "Failed to send image. Try again");
+                        }
+                    }else {
+                        hideLoading();
+                        SweetToast.error(GroupChatActivity.this,"Error occurred while uploading");
+                    }
+                }
+            });
         }
     }
 
@@ -326,7 +341,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 .addChildEventListener(new ChildEventListener() {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                        if (dataSnapshot.exists()) {
+                        if (dataSnapshot.exists()){
                             Message message = dataSnapshot.getValue(Message.class);
 
                             String userId = FirebaseAuth.getInstance().getUid();
@@ -335,44 +350,40 @@ public class GroupChatActivity extends AppCompatActivity {
                                 message.setDbReference(dataSnapshot.getRef());
                                 messageList.add(message);
                                 messageAdapter.notifyDataSetChanged();
+                                messageList_ReCyVw.smoothScrollToPosition(messageList.size() -1);
                             }
 
                         }
                     }
-
                     @Override
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-                        if (dataSnapshot.exists()) {
+                        if (dataSnapshot.exists()){
 
 
-                            Integer position = null;
+                            Integer position  = null ;
                             for (int i = 0; i < messageList.size(); i++) {
-                                if (messageList.get(i).getDbReference().getKey().equals(dataSnapshot.getKey())) {
+                                if (messageList.get(i).getDbReference().getKey().equals(dataSnapshot.getKey())){
                                     position = i;
                                 }
                             }
 
-                            if (position == null)
-                                return; // Not found in adapter because user was not supposed to receive it
+                            if (position == null) return; // Not found in adapter because user was not supposed to receive it
 
                             Message message = dataSnapshot.getValue(Message.class);
 
                             message.setDbReference(dataSnapshot.getRef());
-                            messageList.set(position, message);
+                            messageList.set(position,message);
                             messageAdapter.notifyItemChanged(position);
                         }
 
                     }
-
                     @Override
                     public void onChildRemoved(DataSnapshot dataSnapshot) {
                     }
-
                     @Override
                     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                     }
@@ -380,9 +391,10 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
 
+
     private void sendMessage(boolean encrypt) {
         String message = input_user_message.getText().toString();
-        if (TextUtils.isEmpty(message)) {
+        if (TextUtils.isEmpty(message)){
             SweetToast.info(GroupChatActivity.this, "Please type a message");
         } else {
 
@@ -395,7 +407,7 @@ public class GroupChatActivity extends AppCompatActivity {
             message_text_body.put("type", "text");
             message_text_body.put("time", ServerValue.TIMESTAMP);
             message_text_body.put("from", messageSenderId);
-            message_text_body.put("to", TextUtils.join(",", lastSelectedSendUsersIds));
+            message_text_body.put("to", TextUtils.join("," , lastSelectedSendUsersIds));
             message_text_body.put("toEncrypt", encrypt);
 
             HashMap<String, Object> messageBodyDetails = new HashMap<>();
@@ -405,7 +417,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
-                    if (databaseError != null) {
+                    if (databaseError != null){
                         Log.e("Sending message", databaseError.getMessage());
                     }
                     input_user_message.setText("");
