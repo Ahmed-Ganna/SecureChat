@@ -1,27 +1,17 @@
 package com.project.graduation.chat.secure.Chat;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -46,25 +36,11 @@ import com.project.graduation.chat.secure.Adapter.MessageAdapter;
 import com.project.graduation.chat.secure.Model.Message;
 import com.project.graduation.chat.secure.Model.ProfileInfo;
 import com.project.graduation.chat.secure.R;
-import com.project.graduation.chat.secure.Utils.UserLastSeenTime;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Predicate;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-import id.zelory.compressor.Compressor;
 import xyz.hasnat.sweettoast.SweetToast;
 
 
@@ -93,7 +69,8 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private ProgressDialog dialog;
 
-    private boolean imgSecurity;
+    private boolean encryptImage;
+    private long encryptSecs;
 
 
     @Override
@@ -142,7 +119,7 @@ public class GroupChatActivity extends AppCompatActivity {
         send_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTimeDialog("text");
+                showEncTimeDialog("text");
             }
         });
 
@@ -152,13 +129,13 @@ public class GroupChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                showTimeDialog("image");
+                showEncTimeDialog("image");
 
             }
         });
     } // ending onCreate
 
-    private void showTimeDialog(final String type) {
+    private void showSecureOptionsDialog(final String type, final long encSecs) {
         String[] types = {"Secure message", "Don`t secure message"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -168,14 +145,32 @@ public class GroupChatActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
 
 
-                showSelectUsersDialog(type,which ==0);
+                showSelectUsersDialog(type,which ==0,encSecs);
 
             }
         });
         builder.show();
     }
 
-    private void showSelectUsersDialog(final String type, final boolean encrypt) {
+    private void showEncTimeDialog(final String type) {
+        final long[] times = {5,10,15};
+        final String[] types = {"5 sec", "10 sec" , "15 sec"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Time");
+        builder.setItems(types, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+
+                showSecureOptionsDialog(type,times[which]);
+
+            }
+        });
+        builder.show();
+    }
+
+    private void showSelectUsersDialog(final String type, final boolean encrypt, final long encSecs) {
 
         lastSelectedSendUsersIds.clear();
 
@@ -225,10 +220,11 @@ public class GroupChatActivity extends AppCompatActivity {
 
                             if (type.equals("text")){
 
-                                sendMessage(encrypt);
+                                sendMessage(encrypt,encSecs);
 
                             }else {
-                                imgSecurity = encrypt;
+                                GroupChatActivity.this.encryptImage = encrypt;
+                                GroupChatActivity.this.encryptSecs = encSecs;
                                 Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
                                 galleryIntent.setType("image/*");
                                 startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
@@ -278,6 +274,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task){
                     if (!task.isSuccessful()){
+                        hideLoading();
                         SweetToast.error(GroupChatActivity.this, "Error: " + task.getException().getMessage());
                     }
                     download_url = file_path.getDownloadUrl().toString();
@@ -299,7 +296,8 @@ public class GroupChatActivity extends AppCompatActivity {
                             message_text_body.put("time", ServerValue.TIMESTAMP);
                             message_text_body.put("from", messageSenderId);
                             message_text_body.put("to", TextUtils.join("," , lastSelectedSendUsersIds));
-                            message_text_body.put("toEncrypt", imgSecurity);
+                            message_text_body.put("toEncrypt", encryptImage);
+                            message_text_body.put("encryptSecs", encryptSecs);
 
                             HashMap<String, Object> messageBodyDetails = new HashMap<>();
                             messageBodyDetails.put("group_chat" + "/" + message_push_id, message_text_body);
@@ -392,7 +390,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
 
 
-    private void sendMessage(boolean encrypt) {
+    private void sendMessage(boolean encrypt, long encSecs) {
         String message = input_user_message.getText().toString();
         if (TextUtils.isEmpty(message)){
             SweetToast.info(GroupChatActivity.this, "Please type a message");
@@ -409,6 +407,7 @@ public class GroupChatActivity extends AppCompatActivity {
             message_text_body.put("from", messageSenderId);
             message_text_body.put("to", TextUtils.join("," , lastSelectedSendUsersIds));
             message_text_body.put("toEncrypt", encrypt);
+            message_text_body.put("encryptSecs", encSecs);
 
             HashMap<String, Object> messageBodyDetails = new HashMap<>();
             messageBodyDetails.put("group_chat" + "/" + message_push_id, message_text_body);

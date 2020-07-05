@@ -1,11 +1,9 @@
 package com.project.graduation.chat.secure.Adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -26,15 +24,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makeramen.roundedimageview.RoundedImageView;
 import com.project.graduation.chat.secure.Model.Message;
 import com.project.graduation.chat.secure.R;
-import com.makeramen.roundedimageview.RoundedImageView;
-import com.project.graduation.chat.secure.Utils.BlurImage;
 import com.project.graduation.chat.secure.Utils.Constants;
 import com.project.graduation.chat.secure.Utils.CryptLib;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.util.HashMap;
 import java.util.List;
@@ -146,14 +141,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 loadMessageImage(message,holder.senderImageMsg);
 
-                Log.e("tag","from adapter, link : "+ message.getMessage());
+                Log.d("tag","from adapter, link : "+ message.getMessage());
             } else {
                 holder.user_profile_image.setVisibility(View.VISIBLE);
                 holder.senderImageMsg.setVisibility(View.GONE);
 
                 loadMessageImage(message,holder.receiverImageMsg);
 
-                Log.e("tag","from adapter, link : "+ message.getMessage());
+                Log.d("tag","from adapter, link : "+ message.getMessage());
 
             }
         }
@@ -171,10 +166,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                         HashMap<String,Object> map = new HashMap<>();
 
-                        if (messageType.equals("text")){
-                            String encrypted = getEncryptedMessage(message.getMessage());
-                            map.put("message",encrypted);
-                        }
+                       String encrypted = encrypt(message.getMessage());
+                        map.put("message",encrypted);
                         map.put("encrypted",true);
                         rootDbReference.child(messageReference).updateChildren(map);
 
@@ -184,17 +177,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                         HashMap<String,Object> map = new HashMap<>();
 
-                        if (messageType.equals("text")){
-                            String encrypted = getEncryptedMessage(message.getMessage());
-                            map.put("message",encrypted);
-                        }
+                        String encrypted = encrypt(message.getMessage());
+                        map.put("message",encrypted);
                         map.put("encrypted",true);
                         rootDbReference.child(message_sender_reference).updateChildren(map);
                         rootDbReference.child(message_receiver_reference).updateChildren(map);
                     }
 
                 }
-            },TIME_MESSAGE_MILLIES);
+            },message.getEncryptSecs()*1000);
         }
 
     }
@@ -224,28 +215,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         if (message.isEncrypted()){
 
-            /*Target target = new Target() {
-                @Override
-                public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                    imageView.setImageBitmap(BlurImage.fastblur(bitmap, 1f, 80));
-                }
-
-                @Override
-                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                    e.printStackTrace();
-                }
-
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                    imageView.setImageDrawable(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)));
-                }
-            };*/
+            String decryptedUrl = decrypt(message.getMessage());
 
             Picasso.get()
-                    .load(message.getMessage())
-                    //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                    .load(decryptedUrl)
                     .transform(new BlurTransformation(context, 80, 1))
                     .placeholder(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)))
                     .into(imageView);
@@ -254,7 +227,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             Picasso.get()
                     .load(message.getMessage())
-                    //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                     .placeholder(new ColorDrawable(ContextCompat.getColor(context,R.color.gray)))
                     .into(imageView);
 
@@ -262,17 +234,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
     }
 
-    private String getEncryptedMessage(String message) {
+    private String encrypt(String message) {
         try {
             CryptLib _crypt = new CryptLib();
             String output= "";
-            String key = CryptLib.SHA256(Constants.AES_KEY, 32); //32 bytes = 256 bit
-            String iv = CryptLib.generateRandomIV(16); //16 bytes = 128 bit
-            output = _crypt.encrypt(message, key, iv); //encrypt
-            System.out.println("encrypted text=" + output);
+            /*String key = CryptLib.SHA256(Constants.AES_KEY, 32); //32 bytes = 256 bit
+            String iv = CryptLib.generateRandomIV(16); //16 bytes = 128 bit*/
+            output = _crypt.encrypt(message, Constants.KEY, Constants.IV); //encrypt
             //output = _crypt.decrypt(output, key,iv); //decrypt
             //System.out.println("decrypted text=" + output);
             return output;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String decrypt(String text) {
+        try {
+            CryptLib crypt = new CryptLib();
+            return crypt.decrypt(text, Constants.KEY,Constants.IV); //decrypt
         } catch (Exception e) {
             e.printStackTrace();
         }

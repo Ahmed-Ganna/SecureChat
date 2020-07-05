@@ -87,6 +87,7 @@ public class SingleChatActivity extends AppCompatActivity {
 
     private ConnectivityReceiver connectivityReceiver;
     private boolean imgSecurity;
+    private long encryptSecs;
     private ProgressDialog dialog;
 
 
@@ -202,7 +203,7 @@ public class SingleChatActivity extends AppCompatActivity {
         send_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTimeDialog("text");
+                showEncTimeDialog("text");
             }
         });
 
@@ -212,13 +213,32 @@ public class SingleChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                showTimeDialog("image");
+                showEncTimeDialog("image");
 
             }
         });
     } // ending onCreate
 
-    private void showTimeDialog(final String type) {
+
+    private void showEncTimeDialog(final String type) {
+        final long[] times = {5,10,15};
+        final String[] types = {"5 sec", "10 sec" , "15 sec"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Time");
+        builder.setItems(types, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+
+                showSecureOptionsDialog(type,times[which]);
+
+            }
+        });
+        builder.show();
+    }
+
+    private void showSecureOptionsDialog(final String type, final long encSecs) {
         String[] types = {"Secure message", "Don`t secure message"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -230,11 +250,12 @@ public class SingleChatActivity extends AppCompatActivity {
                 if (type.equals("text")){
 
 
-                    sendMessage(which==0 );
+                    sendMessage(which==0,encSecs );
 
 
                 }else {
                     imgSecurity = which==0;
+                    encryptSecs = encSecs;
                     Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
                     galleryIntent.setType("image/*");
                     startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
@@ -282,10 +303,11 @@ public class SingleChatActivity extends AppCompatActivity {
             final StorageReference file_path = imageMessageStorageRef.child(message_push_id + ".jpg");
 
             UploadTask uploadTask = file_path.putFile(imageUri);
-            Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task){
                     if (!task.isSuccessful()){
+                        hideLoading();
                         SweetToast.error(SingleChatActivity.this, "Error: " + task.getException().getMessage());
                     }
                     download_url = file_path.getDownloadUrl().toString();
@@ -296,6 +318,7 @@ public class SingleChatActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()){
                         if (task.isSuccessful()){
+                            hideLoading();
                             download_url = task.getResult().toString();
                             //Toast.makeText(ChatActivity.this, "From ChatActivity, link: " +download_url, Toast.LENGTH_SHORT).show();
 
@@ -306,6 +329,7 @@ public class SingleChatActivity extends AppCompatActivity {
                             message_text_body.put("time", ServerValue.TIMESTAMP);
                             message_text_body.put("from", messageSenderId);
                             message_text_body.put("toEncrypt", imgSecurity);
+                            message_text_body.put("encryptSecs", encryptSecs);
 
                             HashMap<String, Object> messageBodyDetails = new HashMap<>();
                             messageBodyDetails.put(message_sender_reference + "/" + message_push_id, message_text_body);
@@ -322,6 +346,7 @@ public class SingleChatActivity extends AppCompatActivity {
                             });
                             Log.e("tag", "Image sent successfully");
                         } else{
+                            hideLoading();
                             SweetToast.warning(SingleChatActivity.this, "Failed to send image. Try again");
                         }
                     }
@@ -376,7 +401,7 @@ public class SingleChatActivity extends AppCompatActivity {
 
 
 
-    private void sendMessage(boolean toEncrypt) {
+    private void sendMessage(boolean toEncrypt, long encSecs) {
         String message = input_user_message.getText().toString();
         if (TextUtils.isEmpty(message)){
             SweetToast.info(SingleChatActivity.this, "Please type a message");
@@ -394,6 +419,7 @@ public class SingleChatActivity extends AppCompatActivity {
             message_text_body.put("time", ServerValue.TIMESTAMP);
             message_text_body.put("from", messageSenderId);
             message_text_body.put("toEncrypt", toEncrypt);
+            message_text_body.put("encryptSecs", encSecs);
 
             HashMap<String, Object> messageBodyDetails = new HashMap<>();
             messageBodyDetails.put(message_sender_reference + "/" + message_push_id, message_text_body);

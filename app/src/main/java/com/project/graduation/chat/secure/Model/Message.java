@@ -11,6 +11,7 @@ public class Message {
     private String from;
     private boolean encrypted;
     private boolean toEncrypt;
+    private long encryptSecs;
 
     @Exclude
     private DatabaseReference dbReference;
@@ -22,7 +23,7 @@ public class Message {
     }
 
     // constructor
-    public Message(String message, String type, long time, boolean seen, String from,boolean encrypted,boolean toEncrypt) {
+    public Message(String message, String type, long time, boolean seen, String from,boolean encrypted,boolean toEncrypt,long encryptSecs) {
         this.message = message;
         this.type = type;
         this.time = time;
@@ -30,6 +31,7 @@ public class Message {
         this.toEncrypt = toEncrypt;
         this.seen = seen;
         this.from = from;
+        this.encryptSecs = encryptSecs;
     }
 
     // getter & setter
@@ -105,5 +107,13 @@ public class Message {
 
     public void setDbReference(DatabaseReference dbReference) {
         this.dbReference = dbReference;
+    }
+
+    public long getEncryptSecs() {
+        return encryptSecs;
+    }
+
+    public void setEncryptSecs(long encryptSecs) {
+        this.encryptSecs = encryptSecs;
     }
 }
