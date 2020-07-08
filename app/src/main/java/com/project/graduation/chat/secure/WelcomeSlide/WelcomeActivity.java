@@ -14,6 +14,8 @@ public class WelcomeActivity extends AppCompatActivity {
         startActivity(new Intent(WelcomeActivity.this, IntroActivity.class));
         finish();
 
+        throw new RuntimeException("Test Crash");
     }
+
 
 }
