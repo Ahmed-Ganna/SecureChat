@@ -193,8 +193,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private void setMessageText(Message message, TextView textView) {
 
 
+        textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
         textView.setText(message.getMessage());
+
         if (message.isEncrypted()){
+
 
             float radius = textView.getTextSize() / 4;
             BlurMaskFilter filter = new BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL);

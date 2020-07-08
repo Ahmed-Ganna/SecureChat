@@ -42,12 +42,12 @@ public class IntroActivity extends Activity {
 
         setContentView(R.layout.intro_activity);
 
-        // saving in local cache through Shared Preferences
+/*        // saving in local cache through Shared Preferences
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS", MODE_PRIVATE);
         if(sharedPreferences.getInt("INTRO", 0) == 1){
             startActivity(new Intent(IntroActivity.this, MainActivity.class));
             finish();
-        }
+        }*/
 
 
         // initializations
