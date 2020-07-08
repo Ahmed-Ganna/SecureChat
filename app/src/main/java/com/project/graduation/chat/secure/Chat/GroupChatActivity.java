@@ -1,5 +1,6 @@
 package com.project.graduation.chat.secure.Chat;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +33,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.project.graduation.chat.secure.Adapter.MessageAdapter;
 import com.project.graduation.chat.secure.Model.Message;
 import com.project.graduation.chat.secure.Model.ProfileInfo;
@@ -144,7 +151,6 @@ public class GroupChatActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-
                 showSelectUsersDialog(type,which ==0,encSecs);
 
             }
@@ -161,7 +167,6 @@ public class GroupChatActivity extends AppCompatActivity {
         builder.setItems(types, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
 
                 showSecureOptionsDialog(type,times[which]);
 
@@ -225,9 +230,9 @@ public class GroupChatActivity extends AppCompatActivity {
                             }else {
                                 GroupChatActivity.this.encryptImage = encrypt;
                                 GroupChatActivity.this.encryptSecs = encSecs;
-                                Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
-                                galleryIntent.setType("image/*");
-                                startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+
+
+                                requestImagePermission();
                             }
 
                         }
@@ -252,6 +257,29 @@ public class GroupChatActivity extends AppCompatActivity {
 
     }
 
+
+    private void requestImagePermission() {
+        Dexter.withContext(this)
+                .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(new PermissionListener() {
+                    @Override
+                    public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                        Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
+                        galleryIntent.setType("image/*");
+                        startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+                    }
+
+                    @Override
+                    public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+
+                    }
+                }).check();
+    }
 
 
     @Override // for gallery picking

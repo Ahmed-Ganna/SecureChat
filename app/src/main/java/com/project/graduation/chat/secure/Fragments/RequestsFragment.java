@@ -6,18 +6,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -34,7 +33,6 @@ import com.project.graduation.chat.secure.Model.Requests;
 import com.project.graduation.chat.secure.Profile.ProfileActivity;
 import com.project.graduation.chat.secure.R;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -133,7 +131,7 @@ public class RequestsFragment extends Fragment {
                                         if(!userThumbPhoto.equals("default_image")) { // default image condition for new user
                                             Picasso.get()
                                                     .load(userThumbPhoto)
-                                                    .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                                                    //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                                                     .placeholder(R.drawable.default_profile_image)
                                                     .into(holder.user_photo, new Callback() {
                                                         @Override
@@ -289,7 +287,7 @@ public class RequestsFragment extends Fragment {
                                         if(!userThumbPhoto.equals("default_image")) { // default image condition for new user
                                             Picasso.get()
                                                     .load(userThumbPhoto)
-                                                    .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                                                    //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                                                     .placeholder(R.drawable.default_profile_image)
                                                     .into(holder.user_photo, new Callback() {
                                                         @Override

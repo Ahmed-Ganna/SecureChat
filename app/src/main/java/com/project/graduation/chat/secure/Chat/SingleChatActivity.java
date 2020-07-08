@@ -1,5 +1,6 @@
 package com.project.graduation.chat.secure.Chat;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,12 +42,17 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
+import com.project.graduation.chat.secure.Adapter.MessageAdapter;
 import com.project.graduation.chat.secure.Model.Message;
 import com.project.graduation.chat.secure.R;
-import com.project.graduation.chat.secure.Adapter.MessageAdapter;
 import com.project.graduation.chat.secure.Utils.UserLastSeenTime;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -161,7 +167,7 @@ public class SingleChatActivity extends AppCompatActivity {
                         // show image on appbar
                         Picasso.get()
                                 .load(thumb_image)
-                                .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                                //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                                 .placeholder(R.drawable.default_profile_image)
                                 .into(chatUserImageView, new Callback() {
                                     @Override
@@ -256,13 +262,36 @@ public class SingleChatActivity extends AppCompatActivity {
                 }else {
                     imgSecurity = which==0;
                     encryptSecs = encSecs;
-                    Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
-                    galleryIntent.setType("image/*");
-                    startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+
+                    requestImagePermission();
+
                 }
             }
         });
         builder.show();
+    }
+
+    private void requestImagePermission() {
+        Dexter.withContext(this)
+                .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(new PermissionListener() {
+                    @Override
+                    public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                        Intent galleryIntent = new Intent().setAction(Intent.ACTION_GET_CONTENT);
+                        galleryIntent.setType("image/*");
+                        startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
+                    }
+
+                    @Override
+                    public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+
+                    }
+                }).check();
     }
 
 

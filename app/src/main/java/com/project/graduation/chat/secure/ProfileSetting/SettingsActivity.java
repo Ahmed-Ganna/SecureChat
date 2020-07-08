@@ -35,7 +35,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.project.graduation.chat.secure.R;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -150,7 +149,6 @@ public class SettingsActivity extends AppCompatActivity {
                 if(!image.equals("default_image")){ // default image condition for new user
                     Picasso.get()
                             .load(image)
-                            .networkPolicy(NetworkPolicy.OFFLINE) // for offline
                             .placeholder(R.drawable.default_profile_image)
                             .error(R.drawable.default_profile_image)
                             .into(profile_settings_image);

@@ -62,9 +62,12 @@ dependencies {
     // for stylist toast
     implementation 'com.github.TheHasnatBD:SweetToast:1.0.2'
 
+    implementation 'com.karumi:dexter:6.2.1'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
 
 }
 apply plugin: 'com.google.gms.google-services'

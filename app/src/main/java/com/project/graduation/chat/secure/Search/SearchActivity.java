@@ -29,7 +29,6 @@ import com.google.firebase.database.Query;
 import com.project.graduation.chat.secure.Model.ProfileInfo;
 import com.project.graduation.chat.secure.Profile.ProfileActivity;
 import com.project.graduation.chat.secure.R;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import cn.zhaiyifan.rememberedittext.RememberEditText;
@@ -122,7 +121,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 Picasso.get()
                         .load(model.getUser_image())
-                        .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                        //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                         .placeholder(R.drawable.default_profile_image)
                         .into(holder.profile_pic);
 

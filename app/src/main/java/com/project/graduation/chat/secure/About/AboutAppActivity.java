@@ -14,7 +14,6 @@ import com.project.graduation.chat.secure.R;
 public class AboutAppActivity extends AppCompatActivity {
 
     private Toolbar mToolbar;
-    private Button gitBtn, InstaBtn, TwBtn, LinBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,52 +25,6 @@ public class AboutAppActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("About");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        gitBtn = findViewById(R.id.git_btn);
-        InstaBtn = findViewById(R.id.insta_btn);
-        LinBtn = findViewById(R.id.lin_btn);
-        TwBtn = findViewById(R.id.tw_btn);
-
-        // 4 buttons
-        // git button
-        gitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = Uri.parse("https://github.com/andy.ahmedg");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent);
-            }
-        });
-
-        // instagram button
-        InstaBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = Uri.parse("https://instagram.com/andy.ahmedg");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent);
-            }
-        });
-
-        // Linkedin button
-        LinBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = Uri.parse("https://linkedin.com/in/andy.ahmedg");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent);
-            }
-        });
-
-        //twitter button
-        TwBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = Uri.parse("https://twitter.com/andy.ahmedg");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent);
-            }
-        });
 
 
     }

@@ -30,7 +30,6 @@ import com.project.graduation.chat.secure.Model.Friends;
 import com.project.graduation.chat.secure.R;
 import com.project.graduation.chat.secure.Utils.UserLastSeenTime;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -104,7 +103,7 @@ public class ChatsFragment extends Fragment {
                             if (!userThumbPhoto.equals("default_image")) { // default image condition for new user
                                 Picasso.get()
                                         .load(userThumbPhoto)
-                                        .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                                        //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                                         .placeholder(R.drawable.default_profile_image)
                                         .into(holder.user_photo, new Callback() {
                                             @Override

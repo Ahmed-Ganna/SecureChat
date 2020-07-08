@@ -62,7 +62,7 @@
                         android:layout_width="150dp"
                         android:layout_height="150dp"
                         android:layout_marginTop="30dp"
-                        android:src="@color/colorPrimary"
+                        android:src="@mipmap/ic_launcher"
                         app:civ_border_color="@color/colorPrimary"
                         app:civ_border_width="0.70dp" />
 
@@ -76,68 +76,33 @@
                         android:textStyle="bold|italic" />
 
                     <TextView
-                        android:id="@+id/dev_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/comfortaa"
-                        android:text="@string/student_name"
+                        android:text="Mohamed Gamal"
                         android:textColor="@color/black"
                         android:textSize="20sp" />
 
                     <TextView
-                        android:id="@+id/about_dev1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="fb.com/dev.ahmedg"
-                        android:textStyle="normal" />
-
-
-
-                    <LinearLayout
-                        android:id="@+id/linLayout1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/git_btn"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_margin="7dp"
-                            android:background="@drawable/ic_github" />
-
-                        <Button
-                            android:id="@+id/insta_btn"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_margin="7dp"
-                            android:background="@drawable/ic_instagram" />
-
-                        <Button
-                            android:id="@+id/lin_btn"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_margin="7dp"
-                            android:background="@drawable/ic_linkedin" />
-
-                        <Button
-                            android:id="@+id/tw_btn"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_margin="7dp"
-                            android:background="@drawable/ic_twitter" />
-
-                    </LinearLayout>
+                        android:fontFamily="@font/comfortaa"
+                        android:text="Abeer Eltanany"
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
                     <TextView
-                        android:id="@+id/username_txt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="30dp"
-                        android:text="Graduation project"
+                        android:fontFamily="@font/comfortaa"
+                        android:text="Ibrahim Hassan"
+                        android:textColor="@color/black"
+                        android:layout_marginBottom="10dp"
                         android:textSize="20sp" />
+
+
+
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

@@ -30,7 +30,6 @@ import com.project.graduation.chat.secure.Chat.SingleChatActivity;
 import com.project.graduation.chat.secure.Model.Friends;
 import com.project.graduation.chat.secure.Profile.ProfileActivity;
 import com.project.graduation.chat.secure.R;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -110,7 +109,7 @@ public class FriendsActivity extends AppCompatActivity {
                         holder.name.setText(userName);
                         Picasso.get()
                                 .load(userThumbPhoto)
-                                .networkPolicy(NetworkPolicy.OFFLINE) // for Offline
+                                //.networkPolicy(NetworkPolicy.OFFLINE) // for Offline
                                 .placeholder(R.drawable.default_profile_image)
                                 .into(holder.profile_thumb);
 
